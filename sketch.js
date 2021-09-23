@@ -1,10 +1,11 @@
-var bg,bgImg,shooter;
-var shooterImgL,shooterImgR, shooter_shootingR,shooter_shootingL,shooter_diedL,shooter_diedR;
-var zombie_imgR,zombie_imgL,zombieL,zombieR,zombieGrpL;
-var bulletsRimg,bulletsLimg,bulletL,bulletR,bulletGrpL;
+var bg,bgImg;
+var shooter,shooterImgL,shooterImgR, shooter_shootingR,shooter_shootingL,shooter_diedL,shooter_diedR;
+var zombie_imgR,zombie_imgL,zombieL,zombieR,zombieGrpL,zombieGrpR;
+var bulletsRimg,bulletsLimg,bulletL,bulletR,bulletGrpL,bulletGrpR;
 var topwall,rightwall,bottomwall,leftwall;
-var dieSound,winSound;
+var dieSound,winSound,zomDSound;
 var score=0;
+var life,life_img;
 
 function preload(){
   
@@ -21,7 +22,11 @@ function preload(){
   bulletsRimg=loadImage("assets/BulletR2.png");
   bulletsLimg=loadImage("assets/BulletL1.png");
 
-  dieSound=loadSound("assets/explosion.mp3");
+  dieSound=loadSound("assets/lose.mp3");
+  winSound=loadSound("assets/win.mp3");
+  zomDSound=loadSound("assets/explosion.mp3");
+
+  life_img=loadImage("assets/heart_1.png")
 
   bgImg = loadImage("assets/bg.jpeg");
 
@@ -32,10 +37,14 @@ function setup() {
   createCanvas(1536,753);  
 
 //creating the player sprite
-  shooter = createSprite(768,376.5, 50, 50);
+  shooter = createSprite(768,376.5, 30, 10);
   shooter.addImage(shooterImgL);
   shooter.scale = 0.3
-  shooter.setCollider("rectangle",0,0,300,300);
+  shooter.setCollider("rectangle",0,0,250,460);
+
+  life=createSprite(1470,85,20,20);
+  life.addImage(life_img);
+  life.scale=0.15;
 
   topwall= createSprite(768,5,1536,10);
   rightwall=createSprite(1531,376.5,10,753);
@@ -48,6 +57,8 @@ function setup() {
 
   bulletGrpL=new Group();
   zombieGrpL=new Group();
+  bulletGrpR=new Group();
+  zombieGrpR=new Group();
 
   zombieR=createSprite(1530,random(150,550),50,50);
   zombieR.addImage(zombie_imgR);
@@ -84,8 +95,10 @@ function draw() {
   text("to move the player",30,85);
   text("F to shoot the left zombies",30,105);
   text("R to shoot the right zombies",30,125);
+  text("to win the game get score = 69",30,145);
   textSize(25);
   text("SCORE: "+ score,1380,50);
+  text("LIFE :",1380,90);
 
   //moving the player up and down and making the game mobile compatible using touches
 if(keyDown("w")){
@@ -110,13 +123,38 @@ if(shooter.isTouching(topwall)||shooter.isTouching(rightwall)||shooter.isTouchin
   shooter.x=768;
   shooter.y=376.5;
 }
-if(zombieGrpL.isTouching(bulletGrpL)){
+
+if(zombieGrpR.isTouching(shooter)||zombieGrpL.isTouching(shooter)){
+  //dieSound.play();
+  //shooter.destroy();
+  //life.destroy();
+  //zombieGrpR.destroyEach();
+  // zombieGrpL.destroyEach();
+}
+if(bulletGrpL.isTouching(zombieGrpL)||bulletGrpR.isTouching(zombieGrpL)){
 for(var i=0;i<zombieGrpL.length;i++){ 
-  if(zombieGrpL[i].isTouching(bulletGrpL)){ 
-  zombieGrpL[i].destroyEach(); 
-  bulletGrpL.destroyEach(); 
+  if(bulletGrpL.isTouching(zombieGrpL[i])||bulletGrpR.isTouching(zombieGrpL[i])){ 
+  zombieGrpL[i].destroy(); 
+  bulletGrpL.destroyEach();
+  bulletGrpR.destroyEach(); 
+  score+=1;
   }
 }
+}
+
+if(zombieGrpR.isTouching(bulletGrpR)||bulletGrpL.isTouching(zombieGrpR)){
+for(var i=0;i<zombieGrpR.length;i++){ 
+  if(bulletGrpR.isTouching(zombieGrpR[i])||bulletGrpL.isTouching(zombieGrpR[i])){ 
+  zombieGrpR[i].destroy(); 
+  bulletGrpR.destroyEach();
+  bulletGrpL.destroyEach();
+  score+=1; 
+  }
+}
+}
+
+if(score===69){
+winSound.play();
 }
 
 ffa()
@@ -126,20 +164,21 @@ drawSprites();
 }
 
 function ffa(){
-  if(frameCount%150===0){
-    zombieR=createSprite(1530,random(150,550),50,50);
+  if(frameCount%250===0){
+    zombieR=createSprite(1530,random(100,650),50,50);
     zombieR.addImage(zombie_imgR);
     zombieR.scale=0.12;
     zombieR.velocityX=-2;
-    zombieR.lifetime=400;
+    zombieR.lifetime=750;
+    zombieGrpR.add(zombieR);
   }
 
-  if(frameCount%150===0){
-    zombieL=createSprite(10,random(200,550),50,50);
+  if(frameCount%250===0){
+    zombieL=createSprite(10,random(100,650),50,50);
     zombieL.addImage(zombie_imgL);
     zombieL.scale=0.12;
     zombieL.velocityX=2;
-    zombieL.lifetime=400;
+    zombieL.lifetime=750;
     zombieGrpL.add(zombieL);
   }
 
@@ -148,6 +187,7 @@ function ffa(){
     bulletR.addImage(bulletsRimg);
     bulletR.velocityX=100;
     bulletR.scale=0.2;
+    bulletGrpR.add(bulletR);
     shooter.addImage(shooter_shootingR);
   }else if(keyWentUp("r")){
     shooter.addImage(shooterImgR);
@@ -158,6 +198,7 @@ function ffa(){
     bulletL.addImage(bulletsLimg);
     bulletL.velocityX=-100;
     bulletL.scale=0.2;
+    bulletGrpL.add(bulletL);
     shooter.addImage(shooter_shootingL);
   }else if(keyWentUp("f")){
     shooter.addImage(shooterImgL);
