@@ -65,6 +65,7 @@ function setup() {
   zombieR.scale=0.12;
   zombieR.velocityX=-2;
   zombieR.lifetime=400;
+  zombieGrpR.add(zombieR);
 
   bulletR=createSprite(shooter.x,shooter.y,50,50);
   bulletR.addImage(bulletsRimg);
@@ -81,6 +82,7 @@ function setup() {
   zombieL.scale=0.12;
   zombieL.velocityX=2;
   zombieL.lifetime=400;
+  zombieL.debug=true
   zombieGrpL.add(zombieL);
   
 }
@@ -124,13 +126,6 @@ if(shooter.isTouching(topwall)||shooter.isTouching(rightwall)||shooter.isTouchin
   shooter.y=376.5;
 }
 
-if(zombieGrpR.isTouching(shooter)||zombieGrpL.isTouching(shooter)){
-  //dieSound.play();
-  //shooter.destroy();
-  //life.destroy();
-  //zombieGrpR.destroyEach();
-  // zombieGrpL.destroyEach();
-}
 if(bulletGrpL.isTouching(zombieGrpL)||bulletGrpR.isTouching(zombieGrpL)){
 for(var i=0;i<zombieGrpL.length;i++){ 
   if(bulletGrpL.isTouching(zombieGrpL[i])||bulletGrpR.isTouching(zombieGrpL[i])){ 
@@ -158,6 +153,7 @@ winSound.play();
 }
 
 ffa()
+gameEnd()
 
 drawSprites();
 
@@ -202,5 +198,24 @@ function ffa(){
     shooter.addImage(shooter_shootingL);
   }else if(keyWentUp("f")){
     shooter.addImage(shooterImgL);
+  }
+}
+
+function gameEnd(){
+ 
+  if(zombieGrpR.isTouching(shooter)||zombieGrpL.isTouching(shooter)){
+    for(var i = 0;i < zombieGrpL.length; i++){
+      dieSound.play();
+      shooter.destroy();
+      life.destroy();
+      zombieGrpL[i].destroyEach();
+    }
+
+    for(var i = 0;i < zombieGrpR.length; i++){
+      dieSound.play();
+      shooter.destroy();
+      life.destroy();
+      zombieGrpR[i].destroyeach();
+    }
   }
 }
