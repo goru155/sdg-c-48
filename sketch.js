@@ -82,7 +82,6 @@ function setup() {
   zombieL.scale=0.12;
   zombieL.velocityX=2;
   zombieL.lifetime=400;
-  zombieL.debug=true
   zombieGrpL.add(zombieL);
   
 }
